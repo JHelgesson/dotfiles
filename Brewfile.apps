@@ -1,3 +1,12 @@
 # GUI apps and fonts installed with Homebrew Cask.
 cask "ghostty"
 cask "font-sauce-code-pro-nerd-font"
+cask "google-chrome"
+cask "visual-studio-code"
+cask "docker-desktop"
+cask "slack"
+cask "bitwarden"
+cask "obsidian"
+cask "freelens"
+cask "monokle"
+cask "gitkraken"
