@@ -1,0 +1,42 @@
+# Ghostty använder på macOS normalt denna fil.
+# Ändra här och kör sedan ./install.sh för att applicera lokalt.
+theme = Chester
+
+# Typography
+font-family = SauceCodePro
+font-size = 14
+
+# Window look
+background-opacity = 0.7
+background-blur = 20
+background-opacity-cells = true
+macos-titlebar-style = transparent
+window-padding-x = 10
+window-padding-y = 8
+window-padding-color = extend
+
+# Window behavior
+window-height = 40
+window-width = 130
+window-position-x = 10
+window-position-y = 10
+window-save-state = always
+window-inherit-working-directory = true
+tab-inherit-working-directory = true
+split-inherit-working-directory = true
+
+# Shell and clipboard
+clipboard-read = allow
+clipboard-write = allow
+copy-on-select = clipboard
+clipboard-trim-trailing-spaces = true
+clipboard-paste-protection = true
+confirm-close-surface = always
+quit-after-last-window-closed = true
+shell-integration = zsh
+
+# Cursor
+cursor-style = bar
+cursor-style-blink = false
+
+auto-update = download
