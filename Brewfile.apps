@@ -1,0 +1,3 @@
+# GUI apps and fonts installed with Homebrew Cask.
+cask "ghostty"
+cask "font-sauce-code-pro-nerd-font"
