@@ -17,7 +17,7 @@ window-padding-color = extend
 
 # Window behavior
 window-height = 40
-window-width = 130
+window-width = 160
 window-position-x = 10
 window-position-y = 10
 window-save-state = always
