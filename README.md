@@ -7,7 +7,7 @@ Dotfiles för macOS med `zsh`, `Ghostty` och `oh-my-posh`.
 - `Brewfile`: CLI-verktyg och delade terminalberoenden som installeras via Homebrew
 - `Brewfile.apps`: GUI-appar och fonter som installeras via Homebrew Cask
 - `install.sh`: installerar eller uppdaterar den lokala miljön
-- `bootstrap/`: installerar `Oh My Zsh` och dina plugins
+- `bootstrap/`: hjälpskript för lokal bootstrap, till exempel `Oh My Zsh` och appinställningar
 - `zsh/`: `.zprofile`, `.zshrc` och delad zsh-konfiguration
 - `ghostty/`: Ghostty-konfiguration för macOS
 - `oh-my-posh/`: prompttema
@@ -60,6 +60,7 @@ Kombinera delar vid behov:
 
 - kör bara `brew bundle --file=Brewfile.apps`
 - installerar eller uppdaterar GUI-appar och fonter via Homebrew Cask
+- applicerar delade appinställningar som finns i repot, till exempel Scroll Reverser
 - kör inte CLI-installation eller dotfiles-bootstrap
 
 `./install.sh --dotfiles`
@@ -78,6 +79,7 @@ Kombinationer, till exempel `./install.sh --cli --dotfiles`
 
 - kör `brew bundle --file=Brewfile` när `--cli` är vald eller när du kör utan flaggor
 - kör `brew bundle --file=Brewfile.apps` när `--apps` är vald eller när du kör utan flaggor
+- applicerar delade appinställningar när `--apps` är vald eller när du kör utan flaggor
 - installerar eller uppdaterar `Oh My Zsh` och custom-plugins när `--dotfiles` är vald eller när du kör utan flaggor
 - backar upp befintliga filer eller gamla symlänkar innan de ersätts av symlänkar
 - skapar `~/.config/zsh/local.zsh` från mall om den saknas
@@ -89,6 +91,7 @@ Kombinationer, till exempel `./install.sh --cli --dotfiles`
 - `~/.zprofile`, `~/.zshrc`, Ghostty-konfigen och `~/.config/ohmyposh/atomic.omp.json` backas upp automatiskt om de redan finns som vanliga filer eller som symlänkar från en annan dotfiles-klon.
 - `~/.oh-my-zsh` versionshanteras inte. Det bootstrapas i stället.
 - `--dotfiles` förutsätter att `git` och `stow` redan finns installerade. Kör `./install.sh` eller `./install.sh --cli` först på en ny maskin.
+- Scroll Reverser konfigureras via `defaults` under domänen `com.pilotmoon.scroll-reverser`. Det går att förbereda inställningarna i repot, men appen behöver fortfarande startas och få sina macOS-behörigheter lokalt.
 - `local.zsh` är för maskinspecifika eller känsliga tillägg och checkas inte in.
 - Homebrew initieras i `.zprofile`. Delad `PATH` ligger i `~/.config/zsh/path.zsh`.
 - `~/bin` finns i `PATH`, men innehållet i `~/bin` synkas inte automatiskt.

@@ -103,6 +103,11 @@ install_brewfile() {
   brew bundle --file="$repo_dir/$brewfile"
 }
 
+apply_app_preferences() {
+  log "Applying shared app preferences"
+  "$repo_dir/bootstrap/scroll-reverser.sh"
+}
+
 apply_dotfiles() {
   require_cmd git
   require_cmd stow "Run ./install.sh --cli first, or install stow manually."
@@ -188,6 +193,7 @@ if $run_cli; then
 fi
 
 if $run_apps; then
+  apply_app_preferences
   install_brewfile "Homebrew cask apps" "Brewfile.apps"
 fi
 
