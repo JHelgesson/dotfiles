@@ -1,6 +1,7 @@
 # Ghostty använder på macOS normalt denna fil.
 # Ändra här och kör sedan ./install.sh för att applicera lokalt.
-theme = Chester
+# Chester
+theme = Gruvbox Dark
 
 # Typography
 font-family = SauceCodePro
