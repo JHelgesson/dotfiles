@@ -1,0 +1,4 @@
+kubernetes.toml
+__pycache__/
+*.pyc
+*.backup.*

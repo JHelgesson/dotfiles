@@ -1,0 +1,10 @@
+# Kopiera till ~/.config/vgr/kubernetes.toml och ersätt exempelvärdena.
+# Filen ska ligga utanför Git-repon. Lägg inte in lösenord eller tokens.
+
+[supervisors.example]
+server = "supervisor.example.invalid"
+insecureSkipTLSVerify = false
+
+[clusters.example-dev]
+supervisor = "example"
+supervisorNamespace = "example-shared-dev"

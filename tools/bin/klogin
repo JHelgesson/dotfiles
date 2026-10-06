@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+"""Log in to a named vSphere workload cluster using private local metadata."""
+
+import argparse
+from pathlib import Path
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+import tomllib
+from urllib.parse import urlsplit
+
+NAME = re.compile(r'[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?')
+
+
+class ConfigError(Exception):
+    pass
+
+
+def load_connections(path):
+    try:
+        with path.open('rb') as source:
+            data = tomllib.load(source)
+    except (OSError, tomllib.TOMLDecodeError) as error:
+        raise ConfigError(f'Kunde inte läsa {path}: {error}') from None
+    supervisors = data.get('supervisors')
+    clusters = data.get('clusters')
+    if not isinstance(supervisors, dict) or not supervisors:
+        raise ConfigError('Konfigurationen saknar supervisors.')
+    if not isinstance(clusters, dict) or not clusters:
+        raise ConfigError('Konfigurationen saknar clusters.')
+    for name, supervisor in supervisors.items():
+        if not isinstance(supervisor, dict):
+            raise ConfigError(f'Ogiltig Supervisor: {name}.')
+        server = supervisor.get('server')
+        if not isinstance(server, str) or not server or any(c.isspace() for c in server):
+            raise ConfigError(f'Ogiltig serveradress för {name}.')
+        try:
+            url = urlsplit(server if '://' in server else 'https://' + server)
+            if (url.scheme != 'https' or not url.hostname or not NAME.fullmatch(url.hostname)
+                    or url.username is not None or url.password is not None
+                    or url.path not in ('', '/') or url.query or url.fragment):
+                raise ValueError()
+            if url.port is not None and not 1 <= url.port <= 65535:
+                raise ValueError()
+        except ValueError:
+            raise ConfigError(f'Ogiltig HTTPS-serveradress för {name}.') from None
+        if not isinstance(supervisor.get('insecureSkipTLSVerify', False), bool):
+            raise ConfigError(f'insecureSkipTLSVerify måste vara true eller false för {name}.')
+    for name, cluster in clusters.items():
+        if not NAME.fullmatch(name) or not isinstance(cluster, dict):
+            raise ConfigError(f'Ogiltigt klusternamn: {name}.')
+        supervisor = cluster.get('supervisor')
+        namespace = cluster.get('supervisorNamespace')
+        if not isinstance(supervisor, str) or supervisor not in supervisors:
+            raise ConfigError(f'Klustret {name} saknar en definierad Supervisor.')
+        if not isinstance(namespace, str) or not NAME.fullmatch(namespace):
+            raise ConfigError(f'Klustret {name} saknar ett giltigt Supervisor-namespace.')
+    return supervisors, clusters
+
+
+def login_command(name, supervisors, clusters, username=None):
+    cluster = clusters[name]
+    supervisor = supervisors[cluster['supervisor']]
+    command = [
+        'kubectl', 'vsphere', 'login',
+        '--server=' + supervisor['server'],
+        '--tanzu-kubernetes-cluster-namespace=' + cluster['supervisorNamespace'],
+        '--tanzu-kubernetes-cluster-name=' + name,
+    ]
+    if supervisor.get('insecureSkipTLSVerify', False):
+        command.append('--insecure-skip-tls-verify')
+    if username:
+        command.append('--vsphere-username=' + username)
+    return command
+
+
+def select_cluster(names):
+    if not sys.stdin.isatty() or not sys.stdout.isatty():
+        raise ConfigError('Ange ett klusternamn eller använd --list utanför en interaktiv terminal.')
+    fzf = shutil.which('fzf')
+    if fzf:
+        result = subprocess.run(
+            [fzf, '--prompt=Kluster: ', '--height=60%', '--layout=reverse', '--border'],
+            input='\n'.join(names) + '\n', text=True, stdout=subprocess.PIPE,
+        )
+        if result.returncode in (1, 130):
+            return None
+        if result.returncode:
+            raise ConfigError('Klusterväljaren misslyckades.')
+        return result.stdout.strip()
+    for index, name in enumerate(names, 1):
+        print(f'{index}. {name}')
+    answer = input('Välj nummer eller klusternamn: ').strip()
+    if not answer:
+        return None
+    if answer.isdecimal() and 1 <= int(answer) <= len(names):
+        return names[int(answer) - 1]
+    return answer
+
+
+def run(command):
+    executable = shutil.which(command[0])
+    if executable is None:
+        raise ConfigError(f'{command[0]} saknas på PATH.')
+    return subprocess.run([executable, *command[1:]]).returncode
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Logga in på ett sparat vSphere-kluster.')
+    parser.add_argument('cluster', nargs='?', help='Klusternamn; utan namn visas en meny.')
+    parser.add_argument('--config', type=Path, default=Path.home() / '.config/vgr/kubernetes.toml')
+    parser.add_argument('--list', action='store_true', help='Lista sparade kluster utan att ansluta.')
+    parser.add_argument('--show', action='store_true', help='Visa kommandon utan att köra dem.')
+    parser.add_argument('--username', help='AD-användarnamn; annars frågar vSphere-verktyget.')
+    args = parser.parse_args()
+    try:
+        supervisors, clusters = load_connections(args.config)
+        if args.list:
+            for name in sorted(clusters):
+                cluster = clusters[name]
+                print(f'{name}\t{cluster["supervisor"]}\t{cluster["supervisorNamespace"]}')
+            return 0
+        name = args.cluster or select_cluster(sorted(clusters))
+        if name is None:
+            return 0
+        if name not in clusters:
+            raise ConfigError(f'Okänt kluster: {name}. Använd --list för sparade kluster.')
+        cluster = clusters[name]
+        print(f'Kluster: {name}', flush=True)
+        print(f'Supervisor: {supervisors[cluster["supervisor"]]["server"]}', flush=True)
+        print(f'Supervisor-namespace: {cluster["supervisorNamespace"]}', flush=True)
+        command = login_command(name, supervisors, clusters, args.username)
+        selection = ['kubectx', name] if shutil.which('kubectx') else ['kubectl', 'config', 'use-context', name]
+        if args.show:
+            print(shlex.join(command))
+            print(shlex.join(selection))
+            return 0
+        # Keep credentials and the vSphere TTY dialogue in the native host tool.
+        # No capture of login output, passwords or tokens; no shell evaluation.
+        code = run(command)
+        if code:
+            print('Inloggningen misslyckades; inget ytterligare contextval kördes.', file=sys.stderr)
+            return code
+        code = run(selection)
+        if not code:
+            print('Välj arbetsnamespace med kubens.', flush=True)
+        return code
+    except (ConfigError, OSError) as error:
+        print(f'Fel: {error}', file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print('\nAvbrutet.', file=sys.stderr)
+        return 130
+
+
+if __name__ == '__main__':
+    sys.exit(main())

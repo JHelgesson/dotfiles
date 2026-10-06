@@ -117,12 +117,14 @@ apply_dotfiles() {
 
   log "Preparing target directories"
   mkdir -p \
+    "$HOME/bin" \
     "$HOME/.config/zsh" \
     "$HOME/.config/ghostty" \
     "$HOME/.config/ohmyposh" \
     "$HOME/Library/Application Support/com.mitchellh.ghostty"
 
   log "Backing up existing files when needed"
+  backup_if_conflicting_path "$HOME/bin/klogin"
   backup_if_conflicting_path "$HOME/.zprofile"
   backup_if_conflicting_path "$HOME/.zshrc"
   backup_if_conflicting_path "$HOME/.config/ghostty/config"
@@ -138,7 +140,7 @@ apply_dotfiles() {
   fi
 
   log "Applying dotfiles with stow"
-  stow --target="$HOME" --restow zsh ghostty oh-my-posh
+  stow --target="$HOME" --restow zsh ghostty oh-my-posh tools
 }
 
 while [[ $# -gt 0 ]]; do
