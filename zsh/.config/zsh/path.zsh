@@ -5,6 +5,7 @@ path=(
   "$HOME/.lmstudio/bin"
   "$HOME/go/bin"
   $path
+  "$HOME/.docker/bin"
 )
 
 export PATH

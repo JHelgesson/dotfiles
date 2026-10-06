@@ -7,6 +7,11 @@ fi
 
 typeset -U fpath FPATH
 
+# Load Homebrew completions before Oh My Zsh initializes completion.
+if command -v brew >/dev/null 2>&1; then
+  fpath=("$(brew --prefix)/share/zsh/site-functions" $fpath)
+fi
+
 if [ -d "$HOME/.docker/completions" ]; then
   fpath=("$HOME/.docker/completions" $fpath)
 fi

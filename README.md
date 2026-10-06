@@ -1,104 +1,74 @@
 # Dotfiles
 
-Dotfiles för macOS med `zsh`, `Ghostty` och `oh-my-posh`.
+Personlig konfiguration för macOS: zsh, Ghostty och oh-my-posh.
+Verktyg och appar installeras med Homebrew. Konfigurationsfiler länkas till
+hemkatalogen med GNU Stow.
 
-## Innehåll
+## Installation
 
-- `Brewfile`: CLI-verktyg och delade terminalberoenden som installeras via Homebrew
-- `Brewfile.apps`: GUI-appar och fonter som installeras via Homebrew Cask
-- `install.sh`: installerar eller uppdaterar den lokala miljön
-- `bootstrap/`: hjälpskript för lokal bootstrap, till exempel `Oh My Zsh` och appinställningar
-- `zsh/`: `.zprofile`, `.zshrc` och delad zsh-konfiguration
-- `ghostty/`: Ghostty-konfiguration för macOS
-- `oh-my-posh/`: prompttema
-
-## Användning
-
-Allt:
+Förutsätter macOS, Homebrew och Git. Kör från repots rot:
 
 ```sh
 ./install.sh
 ```
 
-Endast CLI-verktyg:
+Öppna en ny terminalflik efter installationen.
+
+| Kommando | Omfattning |
+| --- | --- |
+| `./install.sh` | Verktyg, appar, appinställningar och dotfiles. |
+| `./install.sh --cli` | Verktyg från `Brewfile`. |
+| `./install.sh --apps` | Appar och fonter från `Brewfile.apps`, samt appinställningar. |
+| `./install.sh --dotfiles` | Oh My Zsh, plugins och symlänkar till konfigurationen. |
+
+Flaggor kan kombineras, exempelvis `./install.sh --cli --dotfiles`.
+`--dotfiles` kräver att Git och Stow redan är installerade.
+
+Homebrew installerar saknade paket och uppdaterar befintliga. Dotfiles-steget
+hämtar Oh My Zsh om det saknas och uppdaterar dess custom-plugins. Befintliga
+symlänkar till samma repo behålls. Konflikterande filer och symlänkar flyttas
+till `<sökväg>.backup.<tidsstämpel>` innan Stow länkar konfigurationen.
+
+## Filer
+
+| Sökväg | Innehåll |
+| --- | --- |
+| `Brewfile` | CLI-verktyg, inklusive kubectl, kubectx, kubens och fzf. |
+| `Brewfile.apps` | Appar och fonter. |
+| `install.sh` | Installation och applicering av konfiguration. |
+| `bootstrap/` | Oh My Zsh, plugins och Scroll Reverser-inställningar. |
+| `zsh/` | Shellkonfiguration, PATH och mall för lokala tillägg. |
+| `ghostty/` | Terminalkonfiguration. |
+| `oh-my-posh/` | Prompttema. |
+
+De aktiva konfigurationsfilerna är symlänkar till repot. Ändringar i dem sparas
+därför direkt i repot.
+
+## Lokal konfiguration
+
+`~/.config/zsh/local.zsh` skapas från en mall om filen saknas. Använd den för
+maskinspecifika inställningar och hemligheter; filen versionshanteras inte.
+
+Homebrew initieras i `.zprofile`. Gemensam PATH finns i
+`zsh/.config/zsh/path.zsh`. `~/bin` ligger före Homebrew, och
+`~/.docker/bin` ingår. Innehållet i `~/bin` versionshanteras inte.
+Homebrews zsh-kompletteringar laddas före Oh My Zsh.
+
+Scroll Reverser konfigureras för omvänd vertikal musrullning och oförändrad
+styrplatta, med naturlig rullning aktiverad i macOS. Appen måste startas och
+få sina macOS-behörigheter lokalt.
+
+## Kubernetes
+
+`kubectx` väljer bland contexts i den befintliga kubeconfigen. `kubens` väljer
+namespace. Med fzf installerat visas sökbara menyer.
 
 ```sh
-./install.sh --cli
+kubectx       # välj context
+kubens        # välj namespace
+kubectx -     # återgå till föregående context
 ```
 
-Endast GUI-appar:
-
-```sh
-./install.sh --apps
-```
-
-Endast dotfiles och symlänkar:
-
-```sh
-./install.sh --dotfiles
-```
-
-Kombinera delar vid behov:
-
-```sh
-./install.sh --cli --dotfiles
-```
-
-## Översikt
-
-`./install.sh`
-
-- kör allt: CLI-verktyg från `Brewfile`, GUI-appar från `Brewfile.apps` och dotfiles-bootstrap med symlänkar
-
-`./install.sh --cli`
-
-- kör bara `brew bundle --file=Brewfile`
-- installerar eller uppdaterar CLI-verktyg och delade terminalberoenden
-- kör inte app-installation eller dotfiles-bootstrap
-
-`./install.sh --apps`
-
-- kör bara `brew bundle --file=Brewfile.apps`
-- installerar eller uppdaterar GUI-appar och fonter via Homebrew Cask
-- applicerar delade appinställningar som finns i repot, till exempel Scroll Reverser
-- kör inte CLI-installation eller dotfiles-bootstrap
-
-`./install.sh --dotfiles`
-
-- bootstrappper eller uppdaterar `Oh My Zsh` och dess plugins
-- backar upp konflikterande filer eller gamla symlänkar
-- applicerar `zsh`, `ghostty` och `oh-my-posh` som symlänkar med `stow`
-- kör inte `brew bundle`
-
-Kombinationer, till exempel `./install.sh --cli --dotfiles`
-
-- kör bara de delar som motsvarar de flaggor du anger
-- är användbart när du vill uppdatera shellmiljön utan att röra GUI-appar, eller tvärtom
-
-## Vad `install.sh` gör
-
-- kör `brew bundle --file=Brewfile` när `--cli` är vald eller när du kör utan flaggor
-- kör `brew bundle --file=Brewfile.apps` när `--apps` är vald eller när du kör utan flaggor
-- applicerar delade appinställningar när `--apps` är vald eller när du kör utan flaggor
-- installerar eller uppdaterar `Oh My Zsh` och custom-plugins när `--dotfiles` är vald eller när du kör utan flaggor
-- backar upp befintliga filer eller gamla symlänkar innan de ersätts av symlänkar
-- skapar `~/.config/zsh/local.zsh` från mall om den saknas
-- applicerar dotfiles som symlänkar med `stow`
-
-## Viktigt
-
-- `install.sh` är idempotent och kan köras både vid första installation och vid uppdateringar.
-- `~/.zprofile`, `~/.zshrc`, Ghostty-konfigen och `~/.config/ohmyposh/atomic.omp.json` backas upp automatiskt om de redan finns som vanliga filer eller som symlänkar från en annan dotfiles-klon.
-- `~/.oh-my-zsh` versionshanteras inte. Det bootstrapas i stället.
-- `--dotfiles` förutsätter att `git` och `stow` redan finns installerade. Kör `./install.sh` eller `./install.sh --cli` först på en ny maskin.
-- Scroll Reverser konfigureras via `defaults` under domänen `com.pilotmoon.scroll-reverser`. Det går att förbereda inställningarna i repot, men appen behöver fortfarande startas och få sina macOS-behörigheter lokalt.
-- `local.zsh` är för maskinspecifika eller känsliga tillägg och checkas inte in.
-- Homebrew initieras i `.zprofile`. Delad `PATH` ligger i `~/.config/zsh/path.zsh`.
-- `~/bin` finns i `PATH`, men innehållet i `~/bin` synkas inte automatiskt.
-
-## Arbetsflöde
-
-1. Ändra filer i repot.
-2. Kör `./install.sh`.
-3. Verifiera lokalt.
-4. Commita och pusha.
+För vSphere används `kubectl vsphere login` för inloggning och förnyelse.
+Hämta miljöns kubectl och vSphere-plugin från rätt Supervisor-portal och lägg
+dem i `~/bin`. Dessa binärer och klusteruppgifter ingår inte i repot.
