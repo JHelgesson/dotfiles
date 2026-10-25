@@ -127,11 +127,13 @@ apply_dotfiles() {
   backup_if_conflicting_path "$HOME/bin/klogin"
   backup_if_conflicting_path "$HOME/.zprofile"
   backup_if_conflicting_path "$HOME/.zshrc"
+  backup_if_conflicting_path "$HOME/.hushlogin"
   backup_if_conflicting_path "$HOME/.config/ghostty/config"
   backup_if_conflicting_path "$HOME/.config/ghostty/config.ghostty"
   backup_if_conflicting_path "$HOME/Library/Application Support/com.mitchellh.ghostty/config.ghostty"
   backup_if_conflicting_path "$HOME/.config/ohmyposh/atomic.omp.json"
   backup_if_conflicting_path "$HOME/.config/zsh/path.zsh"
+  backup_if_conflicting_path "$HOME/.config/zsh/welcome.zsh"
   backup_if_conflicting_path "$HOME/.config/zsh/local.example.zsh"
 
   if [[ ! -f "$HOME/.config/zsh/local.zsh" ]]; then
