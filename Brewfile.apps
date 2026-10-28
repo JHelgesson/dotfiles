@@ -1,4 +1,4 @@
-# GUI apps and fonts installed with Homebrew Cask.
+# GUI apps, fonts and VS Code extensions installed with Homebrew Bundle.
 cask "ghostty"
 cask "font-fira-code-nerd-font"
 cask "google-chrome"
@@ -11,3 +11,5 @@ cask "freelens"
 cask "monokle"
 cask "gitkraken"
 cask "scroll-reverser"
+
+vscode "azat-io.vscode-gruvbox-icon-theme"

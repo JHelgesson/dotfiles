@@ -14,8 +14,8 @@ Usage:
   ./install.sh                     # install CLI tools, apps and dotfiles
   ./install.sh apply|install|update
   ./install.sh --cli               # install or update CLI tools from Brewfile
-  ./install.sh --apps              # install or update GUI apps from Brewfile.apps
-  ./install.sh --dotfiles          # bootstrap Oh My Zsh and apply symlinks
+  ./install.sh --apps              # install or update apps, fonts and VS Code extensions
+  ./install.sh --dotfiles          # bootstrap Oh My Zsh, apply symlinks and VS Code preferences
   ./install.sh --cli --dotfiles    # combine components as needed
   ./install.sh --help
 EOF
@@ -111,6 +111,7 @@ apply_app_preferences() {
 apply_dotfiles() {
   require_cmd git
   require_cmd stow "Run ./install.sh --cli first, or install stow manually."
+  require_cmd python3 "Run ./install.sh --cli first, or install Python 3 manually."
 
   log "Installing or updating Oh My Zsh and custom plugins"
   "$repo_dir/bootstrap/oh-my-zsh.sh"
@@ -143,6 +144,9 @@ apply_dotfiles() {
 
   log "Applying dotfiles with stow"
   stow --target="$HOME" --restow zsh ghostty oh-my-posh tools
+
+  log "Applying shared VS Code preferences"
+  python3 "$repo_dir/bootstrap/vscode-settings.py"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -198,7 +202,7 @@ fi
 
 if $run_apps; then
   apply_app_preferences
-  install_brewfile "Homebrew cask apps" "Brewfile.apps"
+  install_brewfile "Homebrew apps, fonts and VS Code extensions" "Brewfile.apps"
 fi
 
 if $run_dotfiles; then

@@ -1,8 +1,8 @@
 # Dotfiles
 
-Personlig konfiguration för macOS: zsh, Ghostty och oh-my-posh.
+Personlig konfiguration för macOS: zsh, Ghostty, oh-my-posh och VS Code.
 Verktyg och appar installeras med Homebrew. Konfigurationsfiler länkas till
-hemkatalogen med GNU Stow.
+hemkatalogen med GNU Stow. VS Code-inställningar slås ihop med den lokala filen.
 
 ## Installation
 
@@ -18,11 +18,11 @@ Förutsätter macOS, Homebrew och Git. Kör från repots rot:
 | --- | --- |
 | `./install.sh` | Verktyg, appar, appinställningar och dotfiles. |
 | `./install.sh --cli` | Verktyg från `Brewfile`. |
-| `./install.sh --apps` | Appar och fonter från `Brewfile.apps`, samt appinställningar. |
-| `./install.sh --dotfiles` | Oh My Zsh, plugins, klogin och symlänkar till konfigurationen. |
+| `./install.sh --apps` | Appar, fonter och VS Code-tillägg från `Brewfile.apps`, samt appinställningar. |
+| `./install.sh --dotfiles` | Oh My Zsh, plugins, klogin, symlänkar till konfigurationen och delade VS Code-inställningar. |
 
 Flaggor kan kombineras, exempelvis `./install.sh --cli --dotfiles`.
-`--dotfiles` kräver att Git och Stow redan är installerade.
+`--dotfiles` kräver att Git, Stow och Python 3 redan är installerade.
 
 Homebrew installerar saknade paket och uppdaterar befintliga. Dotfiles-steget
 hämtar Oh My Zsh om det saknas och uppdaterar dess custom-plugins. Befintliga
@@ -34,17 +34,65 @@ till `<sökväg>.backup.<tidsstämpel>` innan Stow länkar konfigurationen.
 | Sökväg | Innehåll |
 | --- | --- |
 | `Brewfile` | CLI-verktyg, inklusive kubectl, kubectx, kubens och fzf. |
-| `Brewfile.apps` | Appar och fonter. |
+| `Brewfile.apps` | Appar, fonter och VS Code-tillägg. |
 | `install.sh` | Installation och applicering av konfiguration. |
 | `bootstrap/` | Oh My Zsh, plugins och Scroll Reverser-inställningar. |
 | `zsh/` | Shellkonfiguration, PATH och mall för lokala tillägg. |
 | `ghostty/` | Terminalkonfiguration. |
 | `oh-my-posh/` | Prompttema. |
+| `vscode/` | Delade VS Code-inställningar som appliceras utan att ersätta övriga lokala val. |
 | `tools/` | Generiska kommandon som länkas till `~/bin`. |
 | `examples/` | Mallar för lokal konfiguration. |
 
-De aktiva konfigurationsfilerna är symlänkar till repot. Ändringar i dem sparas
-därför direkt i repot.
+De konfigurationsfiler som hanteras med Stow är symlänkar till repot. Ändringar
+i dem sparas därför direkt i repot. VS Code hanteras separat, se nedan.
+
+## VS Code
+
+`vscode/settings.json` innehåller ikontema, textstorlek och fönsterzoom:
+
+| Inställning | Värde |
+| --- | --- |
+| `workbench.iconTheme` | `gruvbox-icon-theme` |
+| `window.zoomLevel` | `1.2` |
+| `editor.fontSize` | `13` |
+| `scm.inputFontSize` | `13` |
+| `debug.console.fontSize` | `13` |
+| `terminal.integrated.fontSize` | `13` |
+
+Zoomen förstorar hela gränssnittet, inklusive Explorer. Grundstorleken 13 blir
+ungefär 16 på skärmen efter zoom, även i kodvyn. Rubriker och mindre etiketter
+behåller sina relativa storleksskillnader.
+
+Explorer använder [Gruvbox Icon Theme](https://marketplace.visualstudio.com/items?itemName=azat-io.vscode-gruvbox-icon-theme),
+med ikonfärger anpassade till Gruvbox. Tillägget installeras av `--apps` via
+raden `vscode "azat-io.vscode-gruvbox-icon-theme"` i `Brewfile.apps`.
+`--dotfiles` aktiverar temat via inställningsfilen; på en ny Mac kör du båda
+stegen med `./install.sh --apps --dotfiles` (eller hela `./install.sh`).
+Tidigare ikontillägg avinstalleras inte. För att byta tillbaka till vscode-icons:
+sätt `workbench.iconTheme` till `vscode-icons` i repots inställningsfil och kör
+`./install.sh --dotfiles` igen.
+
+Kör `./install.sh --dotfiles` för att applicera. Skriptet slår ihop repots värden
+med `~/Library/Application Support/Code/User/settings.json`; övriga lokala val,
+inklusive maskinspecifika sökvägar, behålls och kopieras inte till repot.
+Befintlig fil säkerhetskopieras till `settings.json.backup.<tidsstämpel>` innan
+en ändring. Ingen ny backup skapas om värdena redan stämmer.
+JSON-kommentarer och avslutande kommatecken accepteras, men filen skrivs om som
+formaterad JSON utan kommentarer. En ogiltig fil eller en befintlig symlänk
+avbryter appliceringen utan att ersättas.
+
+VS Code-filen är alltså inte en symlänk. Ändra delade värden i repot först;
+installern skriver över just dessa nycklar vid nästa körning. Ändringar i VS
+Codes inställningsgränssnitt förs inte automatiskt tillbaka till repot.
+Inloggningar och övriga inställningar ingår inte i detta steg. Endast de
+VS Code-tillägg som listas i `Brewfile.apps` installeras; din fullständiga
+lokala extensionslista synkas inte.
+
+Utseendet uppdateras normalt direkt. Vid behov: öppna kommandopaletten med
+`Cmd-Shift-P` och kör `Developer: Reload Window`. Du behöver inte avsluta appen.
+Projekt- eller profilinställningar och tidigare fönsterspecifik zoom kan påverka
+resultatet i enskilda fönster.
 
 ## Lokal konfiguration
 
@@ -97,8 +145,11 @@ få sina macOS-behörigheter lokalt.
 
 ## Välkomstpanel
 
-Nya interaktiva Ghostty-login-skal visar en hälsning till Jonas, Docker-status,
-Kubernetes-genvägar och ett slumpat tips, inklusive exempel för bat, fd och k9s.
+Nya interaktiva Ghostty-login-skal visar en engelsk hälsning till Jonas, Docker-status
+och två grupper: `Kubernetes` (klogin, kubectx, kubens och k9s) och
+`Terminal workflow` (z/zi, Ctrl-R, Ctrl-T och bat/fd). Grupperna visas bredvid
+varandra från 70 kolumners bredd, annars under varandra.
+Ett slumpat tips på engelska lär ut detaljer och exempel över tid.
 Docker kontrolleras mot valt endpoint
 med en timeout på 0,7 sekunder. Panelen finns i `zsh/.config/zsh/welcome.zsh`.
 

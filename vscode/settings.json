@@ -1,0 +1,8 @@
+{
+    "workbench.iconTheme": "gruvbox-icon-theme",
+    "window.zoomLevel": 1.2,
+    "editor.fontSize": 13,
+    "scm.inputFontSize": 13,
+    "debug.console.fontSize": 13,
+    "terminal.integrated.fontSize": 13
+}
