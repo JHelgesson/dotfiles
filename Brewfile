@@ -11,3 +11,6 @@ brew "kubernetes-cli"
 brew "kubectx"
 brew "k9s"
 brew "minikube"
+
+# Codex CLI is distributed as a cask, but belongs to the CLI component.
+cask "codex"
