@@ -7,9 +7,10 @@ typeset _dotfiles_welcome_shown=1
   emulate -L zsh
   zmodload zsh/datetime
 
-  local hour greeting docker_status welcome_name index
+  local hour greeting docker_status welcome_name
+  local columns=1 rows=4 first last group row index padding
   local accent='' muted='' reset=''
-  local -a tips kube_commands kube_descriptions terminal_commands terminal_descriptions
+  local -a tips group_titles group_widths key_widths keys descriptions
   welcome_name=${DOTFILES_WELCOME_NAME:-Jonas}
   strftime -s hour '%H' "$EPOCHSECONDS"
 
@@ -73,7 +74,28 @@ except OSError:
     'direnv allow approves the current project environment after you review .envrc.'
   )
 
+  group_titles=('Kubernetes' 'Terminal workflow')
+  group_widths=(32 40)
+  key_widths=(7 8)
+  keys=(klogin kubectx kubens k9s 'z / zi' 'Ctrl-R' 'Ctrl-T' 'bat / fd')
+  descriptions=(
+    'Log in' 'Switch context' 'Switch namespace' 'Explore cluster'
+    'Jump between directories' 'Search command history' 'Find and preview files' 'Read and find files'
+  )
+
+  if (( COLUMNS >= 70 )); then
+    columns=2
+  fi
+
   if (( $+commands[hx] )); then
+    group_titles+=('Helix')
+    group_widths+=(36)
+    key_widths+=(8)
+    keys+=('hx FILE' 'i / Esc' 'y / p' ':w / :wq')
+    descriptions+=('Open a file' 'Type / normal mode' 'Copy / paste selection' 'Save / save and quit')
+    if (( COLUMNS >= 110 )); then
+      columns=3
+    fi
     tips+=(
       'hx FILE opens Helix. Press i to type and Esc to return to normal mode.'
       'In Helix: drag to select text, press y to copy, then p to paste.'
@@ -82,33 +104,32 @@ except OSError:
     )
   fi
 
-  kube_commands=(klogin kubectx kubens k9s)
-  kube_descriptions=('Log in' 'Switch context' 'Switch namespace' 'Explore cluster')
-  terminal_commands=('z / zi' 'Ctrl-R' 'Ctrl-T' 'bat / fd')
-  terminal_descriptions=('Jump between directories' 'Search command history' 'Find and preview files' 'Read and find files')
-
   printf '\n%s%s, %s.%s\n\n' "$accent" "$greeting" "$welcome_name" "$reset"
   printf '%smacOS  ·  Ghostty  ·  zsh%s\n' "$muted" "$reset"
   printf 'Docker: %s\n\n' "$docker_status"
 
   # Pad plain text separately from color escapes to keep the columns aligned.
-  if (( COLUMNS >= 70 )); then
-    printf '%s%-32s%s%s%s%s\n' "$accent" 'Kubernetes' "$reset" "$accent" 'Terminal workflow' "$reset"
-    for index in {1..4}; do
-      printf '  %s%-7s%s %-22s  %s%-8s%s %s\n' \
-        "$accent" "$kube_commands[index]" "$reset" "$kube_descriptions[index]" \
-        "$accent" "$terminal_commands[index]" "$reset" "$terminal_descriptions[index]"
+  for (( first = 1; first <= ${#group_titles}; first += columns )); do
+    last=$(( first + columns - 1 ))
+    if (( last > ${#group_titles} )); then
+      last=${#group_titles}
+    fi
+    for (( group = first; group <= last; group++ )); do
+      padding=$(( group < last ? group_widths[group] : 0 ))
+      printf '%s%-*s%s' "$accent" "$padding" "$group_titles[group]" "$reset"
     done
-  else
-    printf '%sKubernetes%s\n' "$accent" "$reset"
-    for index in {1..4}; do
-      printf '  %s%-7s%s %s\n' "$accent" "$kube_commands[index]" "$reset" "$kube_descriptions[index]"
+    printf '\n'
+    for (( row = 1; row <= rows; row++ )); do
+      for (( group = first; group <= last; group++ )); do
+        index=$(( (group - 1) * rows + row ))
+        padding=$(( group < last ? group_widths[group] - key_widths[group] - 3 : 0 ))
+        printf '  %s%-*s%s %-*s' \
+          "$accent" "$key_widths[group]" "$keys[index]" "$reset" \
+          "$padding" "$descriptions[index]"
+      done
+      printf '\n'
     done
-    printf '\n%sTerminal workflow%s\n' "$accent" "$reset"
-    for index in {1..4}; do
-      printf '  %s%-8s%s %s\n' "$accent" "$terminal_commands[index]" "$reset" "$terminal_descriptions[index]"
-    done
-  fi
-  printf '\n'
+    printf '\n'
+  done
   printf '%sTip: %s%s\n\n' "$muted" "${tips[$(( RANDOM % ${#tips} + 1 ))]}" "$reset"
 }

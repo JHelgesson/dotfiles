@@ -147,9 +147,11 @@ få sina macOS-behörigheter lokalt.
 ## Välkomstpanel
 
 Nya interaktiva Ghostty-login-skal visar en engelsk hälsning till Jonas, Docker-status
-och två grupper: `Kubernetes` (klogin, kubectx, kubens och k9s) och
-`Terminal workflow` (z/zi, Ctrl-R, Ctrl-T och bat/fd). Grupperna visas bredvid
-varandra från 70 kolumners bredd, annars under varandra.
+och grupperna `Kubernetes` (klogin, kubectx, kubens och k9s) och
+`Terminal workflow` (z/zi, Ctrl-R, Ctrl-T och bat/fd). När Helix är installerat
+visas också `Helix` med genvägar för att öppna, redigera, kopiera och spara.
+Från 110 kolumner ryms alla tre bredvid varandra. Vid 70–109 kolumner ligger
+Helix under de första två grupperna. I smalare fönster staplas alla grupper.
 Ett slumpat tips på engelska lär ut detaljer och exempel över tid.
 När Helix är installerat ingår även tips om redigering, kopiering, sparande och
 den inbyggda guiden `hx --tutor`.
