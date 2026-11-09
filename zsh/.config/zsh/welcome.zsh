@@ -73,6 +73,15 @@ except OSError:
     'direnv allow approves the current project environment after you review .envrc.'
   )
 
+  if (( $+commands[hx] )); then
+    tips+=(
+      'hx FILE opens Helix. Press i to type and Esc to return to normal mode.'
+      'In Helix: drag to select text, press y to copy, then p to paste.'
+      'In Helix: press Esc, then :w and Enter to save. Use :wq to save and quit.'
+      'Learn Helix interactively with hx --tutor.'
+    )
+  fi
+
   kube_commands=(klogin kubectx kubens k9s)
   kube_descriptions=('Log in' 'Switch context' 'Switch namespace' 'Explore cluster')
   terminal_commands=('z / zi' 'Ctrl-R' 'Ctrl-T' 'bat / fd')

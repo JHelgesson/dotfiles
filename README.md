@@ -120,6 +120,7 @@ Ghosttys bakgrund har opacitet 0.9 för tydligare kontrast.
 | `bat FIL` | Läs en fil med syntaxfärger och radnummer; q avslutar läsaren. |
 | `fd deployment` | Sök rekursivt efter filnamn som innehåller deployment. |
 | `fd -e yaml` | Lista filer med filändelsen yaml. |
+| `hx FIL` | Öppna en fil i Helix. Kör `hx --tutor` för den inbyggda guiden. |
 
 zoxide lär sig katalogerna när du besöker dem. Vanlig `cd` fungerar fortfarande.
 fzf laddar bara sina tangentbindningar; Tab hanteras av fzf-tab.
@@ -150,6 +151,8 @@ och två grupper: `Kubernetes` (klogin, kubectx, kubens och k9s) och
 `Terminal workflow` (z/zi, Ctrl-R, Ctrl-T och bat/fd). Grupperna visas bredvid
 varandra från 70 kolumners bredd, annars under varandra.
 Ett slumpat tips på engelska lär ut detaljer och exempel över tid.
+När Helix är installerat ingår även tips om redigering, kopiering, sparande och
+den inbyggda guiden `hx --tutor`.
 Docker kontrolleras mot valt endpoint
 med en timeout på 0,7 sekunder. Panelen finns i `zsh/.config/zsh/welcome.zsh`.
 
